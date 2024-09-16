@@ -98,20 +98,50 @@ void checkShoesSizes(List<Shoes> shoesCollection) {
   }
 }
 
-void calculateTotalPrice(List<FashionItem> items) {
+void calculateTotalPrice(List<FashionItem?> items) {
   try {
-    double total = items.fold(0.0, (sum, item) => sum + item.price);
+    double total = items.fold(0.0, (sum, item) {
+      if (item == null) {
+        throw Exception("Товар не может быть null");
+      }
+      return sum + item.price;
+    });
     print("Общая сумма: \$${total.toStringAsFixed(2)}");
   } catch (e) {
     print("Произошла ошибка: $e");
   }
 }
 
+void applyDiscount(List<FashionItem> items, double Function(double) discountFunction, {double minimumPrice = 50.0}) {
+  for (var item in items) {
+    if (item.price >= minimumPrice) {
+      double discountedPrice = discountFunction(item.price);
+      print("Товар ${item.brand} со скидкой: \$${discountedPrice.toStringAsFixed(2)} (изначально \$${item.price.toStringAsFixed(2)})");
+    } else {
+      print("Товар ${item.brand} не подходит для скидки, цена: \$${item.price.toStringAsFixed(2)}");
+    }
+  }
+}
+
 void main() {
   List<Shoes> shoesCollection = [
     Shoes('42', 'Black', 'Leather', brand: 'Nike', price: 100.0),
-    Shoes('41', 'White', 'Canvas', brand: 'Adidas', price: 80.0)
+    Shoes('41', 'White', 'Canvas', brand: 'Adidas', price: 80.0),
+    Shoes('41', 'Pink', 'Leather', brand: 'ASICS', price: 40.0),
   ];
+
+  List<FashionItem?> items = [
+    Shoes('42', 'Black', 'Leather', brand: 'Nike', price: 100.0),
+    null
+  ];
+
+  calculateTotalPrice(items);
+
+  double tenPercentDiscount(double price) {
+    return price * 0.9;
+  }
+
+  applyDiscount(shoesCollection, tenPercentDiscount, minimumPrice: 60.0);
 
   shoesCollection.forEach((shoes) => shoes.wear());
 
