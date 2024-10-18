@@ -18,6 +18,13 @@ class MyApp extends StatelessWidget {
   }
 }
 class PageOne extends StatelessWidget {
+
+  final String nftName = 'Floppa the Cat';
+  final String nftImageUrl = 'https://i.pinimg.com/564x/a6/cf/ce/a6cfce2ae1c59a611f6fa1cdcc5cb1cf.jpg';
+  final String username = '@kirill';
+  final String nftPrice = '3.52 ETH';
+  final String volume = '785 Volume';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +92,7 @@ class PageOne extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 10),
-                  Text('@laydesigner', style: TextStyle(fontSize: 16, color: Colors.black54)),
+                  Text(username, style: TextStyle(fontSize: 16, color: Colors.black54)),
                   SizedBox(width: 10),
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -167,7 +174,7 @@ class PageOne extends StatelessWidget {
                           Icon(Icons.attach_money, color: Colors.white),
                           SizedBox(width: 5),
                           Text(
-                            '785 Volume',
+                            volume,
                             style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                         ],
@@ -269,7 +276,7 @@ class PageOne extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PageTwo()),
+                      MaterialPageRoute(builder: (context) => PageTwo(nftName: nftName, imageUrl: nftImageUrl, username: username, nftPrice: nftPrice, volume: volume,)),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -295,6 +302,20 @@ class PageOne extends StatelessWidget {
 
 
 class PageTwo extends StatelessWidget {
+  final String nftName;
+  final String imageUrl;
+  final String username;
+  final String nftPrice;
+  final String volume;
+
+  PageTwo({
+    required this.nftName,
+    required this.imageUrl,
+    required this.username,
+    required this.nftPrice,
+    required this.volume,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -302,11 +323,10 @@ class PageTwo extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.network(
-              'https://i.pinimg.com/564x/a6/cf/ce/a6cfce2ae1c59a611f6fa1cdcc5cb1cf.jpg',
+              imageUrl,
               fit: BoxFit.cover,
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -323,7 +343,7 @@ class PageTwo extends StatelessWidget {
                       ),
                       SizedBox(width: 10),
                       Text(
-                        '@laydesigner',
+                        username,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -332,13 +352,11 @@ class PageTwo extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   Row(
                     children: [
                       IconButton(
                         icon: Icon(Icons.favorite_border, color: Colors.white),
-                        onPressed: () {
-                        },
+                        onPressed: () {},
                       ),
                       CircleAvatar(
                         backgroundImage: NetworkImage(
@@ -352,7 +370,6 @@ class PageTwo extends StatelessWidget {
               ),
             ),
           ),
-
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +377,7 @@ class PageTwo extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Monkey \nHypebeast',
+                  nftName,
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -369,9 +386,7 @@ class PageTwo extends StatelessWidget {
                   textAlign: TextAlign.left,
                 ),
               ),
-
               SizedBox(height: 20),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Text(
@@ -383,11 +398,22 @@ class PageTwo extends StatelessWidget {
                   textAlign: TextAlign.left,
                 ),
               ),
+              SizedBox(height: 40),
+              // PageView для просмотра нескольких изображений
+              Container(
+                height: 300,
+                child: PageView(
+                  children: [
+                    _buildPageContent('NFT #1', 'https://i.pinimg.com/564x/a6/cf/ce/a6cfce2ae1c59a611f6fa1cdcc5cb1cf.jpg'),
+                    _buildPageContent('NFT #2', 'https://i.pinimg.com/564x/b6/c7/e3/b6c7e3bb1f2ad4ae8bcbfb58bb0d9bd1.jpg'),
+                    _buildPageContent('NFT #3', 'https://i.pinimg.com/564x/c6/e2/17/c6e217cdd2bb482e6272e27f2b503adf.jpg'),
+                  ],
+                ),
+              ),
 
               SizedBox(height: 40),
-
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -413,7 +439,7 @@ class PageTwo extends StatelessWidget {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            '3.52 ETH',
+                            nftPrice,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -439,7 +465,6 @@ class PageTwo extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                       decoration: BoxDecoration(
@@ -462,7 +487,7 @@ class PageTwo extends StatelessWidget {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            '456',
+                            volume,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -493,65 +518,32 @@ class PageTwo extends StatelessWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
 
-          Positioned(
-            bottom: 30,
-            left: 30,
-            right: 30,
-            child: Stack(
-              children: [
-                Container(
-                  width: 180,
-                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 40),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    '785 Volume',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                Positioned(
-                  right: 140,
-                  top: 2,
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          spreadRadius: 2,
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.attach_money,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildPageContent(String nftTitle, String imageUrl) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Text(
+            nftTitle,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 20),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.network(
+              "https://i.pinimg.com/564x/a6/cf/ce/a6cfce2ae1c59a611f6fa1cdcc5cb1cf.jpg",
+              fit: BoxFit.cover,
+              height: 200,
+              width: double.infinity,
             ),
           ),
         ],
@@ -559,4 +551,3 @@ class PageTwo extends StatelessWidget {
     );
   }
 }
-
