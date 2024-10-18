@@ -1,4 +1,8 @@
+import 'package:battery_info/battery_info_plugin.dart';
+import 'package:battery_info/model/android_battery_info.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(MyApp());
@@ -17,13 +21,77 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-class PageOne extends StatelessWidget {
 
+class PageOne extends StatefulWidget {
+  @override
+  _PageOneState createState() => _PageOneState();
+}
+
+class _PageOneState extends State<PageOne> {
   final String nftName = 'Floppa the Cat';
   final String nftImageUrl = 'https://i.pinimg.com/564x/a6/cf/ce/a6cfce2ae1c59a611f6fa1cdcc5cb1cf.jpg';
   final String username = '@kirill';
   final String nftPrice = '3.52 ETH';
   final String volume = '785 Volume';
+
+  static const platform = MethodChannel('sendSms');
+
+  Future<void> sendSms(String phoneNumber, String message) async {
+    var status = await Permission.sms.status;
+
+    if (!status.isGranted) {
+      status = await Permission.sms.request();
+
+      if (status.isDenied) {
+        return;
+      }
+    }
+
+    try {
+      final result = await platform.invokeMethod('send', {
+        'phone': phoneNumber,
+        'msg': message,
+      });
+      print(result); // Handle the success message
+    } on PlatformException catch (e) {
+      print("Failed to send SMS: '${e.message}'.");
+    }
+  }
+
+  String batterylevel = "Загрузка...",
+      batteryhealth = "Загрузка...",
+      chargingstatus = "Загрузка...",
+      pluggedstatus = "Загрузка...";
+
+  @override
+  void initState() {
+    AndroidBatteryInfo? infoandroid = AndroidBatteryInfo();
+
+    Future.delayed(Duration.zero, () async {
+      infoandroid = await BatteryInfoPlugin().androidBatteryInfo;
+      batterylevel = infoandroid!.batteryLevel.toString();
+      batteryhealth = infoandroid!.health.toString();
+      chargingstatus = infoandroid!.chargingStatus.toString();
+      pluggedstatus = infoandroid!.pluggedStatus.toString();
+
+      setState(() {
+      });
+    });
+
+    BatteryInfoPlugin().androidBatteryInfoStream.listen((AndroidBatteryInfo? batteryInfo) {
+      //add listiner to update values if there is changes
+      infoandroid = batteryInfo;
+      batterylevel = infoandroid!.batteryLevel.toString();
+      batteryhealth = infoandroid!.health.toString();
+      chargingstatus = infoandroid!.chargingStatus.toString();
+      pluggedstatus = infoandroid!.pluggedStatus.toString();
+
+      setState(() {
+      });
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,84 +251,6 @@ class PageOne extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              SizedBox(height: 30),
-              Stack(
-                children: [
-                  Container(
-                    height: 300,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        'https://shorturl.at/PpUYB',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 16,
-                    left: 16,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            spreadRadius: 2,
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        '25',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            spreadRadius: 2,
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.attach_money, color: Colors.white),
-                          SizedBox(width: 5),
-                          Text(
-                            '785 Volume',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
               SizedBox(height: 30),
               Text(
                 '00:29:14',
@@ -276,7 +266,15 @@ class PageOne extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PageTwo(nftName: nftName, imageUrl: nftImageUrl, username: username, nftPrice: nftPrice, volume: volume,)),
+                      MaterialPageRoute(
+                        builder: (context) => PageTwo(
+                          nftName: nftName,
+                          imageUrl: nftImageUrl,
+                          username: username,
+                          nftPrice: nftPrice,
+                          volume: volume,
+                        ),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -292,13 +290,34 @@ class PageOne extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(height: 30),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    sendSms("+15551234567", "SMS message");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Send SMS',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
             ],
+
           ),
         ),
       ),
     );
   }
 }
+
 
 
 class PageTwo extends StatelessWidget {
