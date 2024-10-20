@@ -1,5 +1,7 @@
 package com.example.lab4_5
 
+import android.os.BatteryManager
+import android.content.Context
 import android.os.Bundle
 import android.telephony.SmsManager
 import io.flutter.embedding.android.FlutterActivity
@@ -10,6 +12,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity : FlutterActivity() {
     private val channelName = "sendSms"
+    private val batteryChannelName = "battery"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -35,6 +38,26 @@ class MainActivity : FlutterActivity() {
                 }
             }
         )
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, batteryChannelName).setMethodCallHandler(
+            object : MethodChannel.MethodCallHandler {
+                override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+                    when (call.method) {
+                        "getBatteryLevel" -> {
+                            val batteryLevel = getBatteryLevel()
+                            if (batteryLevel != -1) {
+                                result.success(batteryLevel)
+                            } else {
+                                result.error("UNAVAILABLE", "Battery level not available.", null)
+                            }
+                        }
+                        else -> {
+                            result.notImplemented()
+                        }
+                    }
+                }
+            }
+        )
     }
 
     private fun sendSMS(phoneNo: String, msg: String, result: MethodChannel.Result) {
@@ -46,5 +69,10 @@ class MainActivity : FlutterActivity() {
             ex.printStackTrace()
             result.error("Err", "Sms Not Sent", "")
         }
+    }
+
+    private fun getBatteryLevel(): Int {
+        val batteryManager = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
     }
 }

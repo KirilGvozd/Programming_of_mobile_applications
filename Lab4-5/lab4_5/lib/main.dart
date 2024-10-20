@@ -3,6 +3,21 @@ import 'package:battery_info/model/android_battery_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
+
+class BatteryLevel {
+  static const platform = MethodChannel('battery');
+
+  Future<int?> getBatteryLevel() async {
+    try {
+      final int batteryLevel = await platform.invokeMethod('getBatteryLevel');
+      return batteryLevel;
+    } on PlatformException catch (e) {
+      print("Failed to get battery level: '${e.message}'.");
+      return null;
+    }
+  }
+}
 
 void main() {
   runApp(MyApp());
@@ -309,8 +324,13 @@ class _PageOneState extends State<PageOne> {
                   ),
                 ),
               ),
+              SizedBox(width: 50, height: 50,),
+              Text("Battery Level: $batterylevel %"),
+              Text("Battery Health: $batteryhealth"),
+              Text("Charging Status: $chargingstatus"),
+              // Возможные значения: ChargingStatus.charging, discharging, full, unknown
+              Text("Plugged Status: $pluggedstatus"),
             ],
-
           ),
         ),
       ),
@@ -320,7 +340,7 @@ class _PageOneState extends State<PageOne> {
 
 
 
-class PageTwo extends StatelessWidget {
+class PageTwo extends StatefulWidget {
   final String nftName;
   final String imageUrl;
   final String username;
@@ -336,13 +356,34 @@ class PageTwo extends StatelessWidget {
   });
 
   @override
+  _PageTwoState createState() => _PageTwoState();
+}
+
+class _PageTwoState extends State<PageTwo> {
+  final BatteryLevel batteryLevelHelper = BatteryLevel();
+  int? batteryLevel;
+
+  @override
+  void initState() {
+    super.initState();
+    _getBatteryLevel();
+  }
+
+  Future<void> _getBatteryLevel() async {
+    int? level = await batteryLevelHelper.getBatteryLevel();
+    setState(() {
+      batteryLevel = level;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.network(
-              imageUrl,
+              widget.imageUrl,
               fit: BoxFit.cover,
             ),
           ),
@@ -362,7 +403,7 @@ class PageTwo extends StatelessWidget {
                       ),
                       SizedBox(width: 10),
                       Text(
-                        username,
+                        widget.username,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -396,7 +437,7 @@ class PageTwo extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  nftName,
+                  widget.nftName,
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -409,16 +450,15 @@ class PageTwo extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Text(
-                  '02: 35: 56',
+                  'Battery Level: ${batteryLevel != null ? "$batteryLevel%" : "Loading..."}',
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 24,
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.left,
                 ),
               ),
               SizedBox(height: 40),
-              // PageView для просмотра нескольких изображений
               Container(
                 height: 300,
                 child: PageView(
@@ -429,109 +469,14 @@ class PageTwo extends StatelessWidget {
                   ],
                 ),
               ),
-
               SizedBox(height: 40),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            spreadRadius: 2,
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Floor price',
-                            style: TextStyle(fontSize: 26, color: Colors.black),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            nftPrice,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            child: Text(
-                              '-12%',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            spreadRadius: 2,
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Sales',
-                            style: TextStyle(fontSize: 26, color: Colors.white),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            volume,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 24),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            child: Text(
-                              '+5%',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildInfoCard('Floor price', widget.nftPrice, '-12%', Colors.red),
+                    _buildInfoCard('Sales', widget.volume, '+5%', Colors.green),
                   ],
                 ),
               ),
@@ -559,10 +504,61 @@ class PageTwo extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
-              "https://i.pinimg.com/564x/a6/cf/ce/a6cfce2ae1c59a611f6fa1cdcc5cb1cf.jpg",
+              imageUrl,
               fit: BoxFit.cover,
               height: 200,
               width: double.infinity,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value, String percentage, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            spreadRadius: 2,
+            blurRadius: 6,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 26, color: Colors.black),
+          ),
+          SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Text(
+              percentage,
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
