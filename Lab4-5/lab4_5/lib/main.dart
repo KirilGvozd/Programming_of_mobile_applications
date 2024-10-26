@@ -3,7 +3,6 @@ import 'package:battery_info/model/android_battery_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/services.dart';
 
 class BatteryLevel {
   static const platform = MethodChannel('battery');
